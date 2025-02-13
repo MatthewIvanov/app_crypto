@@ -1,13 +1,19 @@
 from fastapi import FastAPI
+from src.config import settings
+from http_client import CMCHTTPClient
+app = FastAPI()
 
-app = FastAPI(
-    title="Trading App"
+
+cmc_client = CMCHTTPClient(
+    base_url = "https://pro-api.coinmarketcap.com",
+    api_key=settings.CMC_API_KEY,
 )
-fake_users=[
-    {"id":1,"role":"admin","name":"Bob"},
-    {"id":2,"role":"investor","name":"John"},
-    {"id":3,"role":"trader","name":"Matthew"},
-]
-@app.get("/users/{user_id}")
-def get_user(user_id:int):
-    return [user for user in fake_users if user.get("id")==user_id]
+
+@app.get("/cryptocurrencies")
+async def get_cryptocurrencies():
+    return await cmc_client.get_listings()
+    
+@app.get("/cryptocurrencies/{currency_id}")
+async def get_cryprocurrency(currency_id:int):
+    return await cmc_client.get_currency(currency_id)   
+    
